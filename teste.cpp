@@ -2,8 +2,9 @@
 #include<fstream>
 #include<sstream>
 #include<stdlib.h>
+#include<cstring>
 
-const int NumMaxRegistros = 4;
+const int NUM_MAX_REGISTROS = 4;
 
 using namespace std;
 
@@ -22,6 +23,15 @@ struct Node{
     Node* proximo=nullptr;
 };
 
+ struct structAUX {
+	int id;
+	char name[50];
+	char team[50];
+	char games[50];
+    int year;
+	char season[50];
+};
+
 class SequenceSet{
     private:
     //header
@@ -36,12 +46,12 @@ class SequenceSet{
         ultimo = NULL;
     };
 
-    void InsereOrdenado(Registro R){};
-    void RemoveRegistro(int IdRemovido){};
-    void buscarRegistro(int IdBuscado){};
+    void insereOrdenado(Registro R){};//implementar
+    bool removeRegistro(int IdRemovido){};//implementar
+    Registro buscarRegistro(int IdBuscado){};//implementar
 };
 
-//funcoes auxiliares que eu ainda irei arrumar estão comentadas(to reaproveitando de ialg)
+//funcoes auxiliares
 void telaOpcoes(){
     system("clear||cls");
     cout<<"-------------------------------------------------------"<<endl;
@@ -60,99 +70,61 @@ void printRegistro(Registro R){
     R.games<<" Year: "<<R.year<<" Season: "<<R.season<<endl;
 }
 
-// TipoJogador* importarBIN(const string& nomeArq, int& tam, int&posicoesPreenchidas) {
-// 	struct structAUX {
-// 		int id;
-// 		char nome[40];
-// 		int idade;
-// 		int nivel;
-// 		char classe[40];
-// 	};
-// 	posicoesPreenchidas=0;
-// 	int tamanhoinicial=40;
-// 	ifstream arquivo(nomeArq, ios::binary);
+Registro* importarBIN(const string& nomeArq) {
+ 	ifstream arquivo(nomeArq, ios::binary);
 
-// 	if(arquivo) {
-// 		arquivo.seekg(0, ios::end);
-// 		streampos arquivoTAM = arquivo.tellg();
-// 		arquivo.seekg(0, ios::beg);
+    if(arquivo) {
+		arquivo.seekg(0, ios::end);
+		streampos arquivoTAM = arquivo.tellg();
+		arquivo.seekg(0, ios::beg);
 
-// 		tam = arquivoTAM / sizeof(structAUX);
+        structAUX* vetAUX = new structAUX[NUM_MAX_REGISTROS];
+        arquivo.read(reinterpret_cast<char*>(vetAUX), sizeof(structAUX) * NUM_MAX_REGISTROS);
+        Registro* Registros = new Registro[NUM_MAX_REGISTROS];
 
-// 		//aloca a memoria do vetor auxiliar e calcula o tamanho do arquivo previamente
-// 		structAUX* vetAUX = new structAUX[tam];
-// 		arquivo.read(reinterpret_cast<char*>(vetAUX), sizeof(structAUX) * tam);
-// 		bool controle=true;
-// 		TipoJogador* vet = new TipoJogador[tam];
+        for(int i=0; i<NUM_MAX_REGISTROS; i++){
+            Registros[i].id=vetAUX[i].id;
+            Registros[i].name=vetAUX[i].name;
+            Registros[i].team=vetAUX[i].team;
+            Registros[i].games=vetAUX[i].games;
+            Registros[i].year=vetAUX[i].year;
+            Registros[i].season=vetAUX[i].season;
+        }
 
 
-// 		while(posicoesPreenchidas <= tam and controle==true) {
-// 			if(posicoesPreenchidas>=tamanhoinicial) {
-// 				//redimensionando
-// 				vet=redimensionaVetor(vet, tamanhoinicial, 10);
-// 				tamanhoinicial = tamanhoinicial+10;
-// 			}
-// 			if(string(vetAUX[posicoesPreenchidas].nome)=="ZZZ POSICAO VAZIA ZZZ") {
-// 				controle=false;
-// 			}
-// 			//adiciona as posicoes do vetor Auxiliar no vetor Principal
-// 			vet=adicionaRegistro(vet, posicoesPreenchidas, vetAUX[posicoesPreenchidas].id,
-// 			                     string(vetAUX[posicoesPreenchidas].nome),
-// 			                     vetAUX[posicoesPreenchidas].idade,
-// 			                     vetAUX[posicoesPreenchidas].nivel,
-// 			                     string(vetAUX[posicoesPreenchidas].classe));
-// 			posicoesPreenchidas++;
-// 		}
-// 		//inativa posicoes que nao serao preenchidas
-// 		for(int k=posicoesPreenchidas; k<tamanhoinicial; k++) {
-// 			vet=InativarPosicao(vet, k);
-// 		}
-// 		delete[] vetAUX;
+        delete[] vetAUX;
+        arquivo.close();
+        return Registros;
+    }else{
+        cout<<endl<<"Erro ao ler arquivo"<<endl;
+        return nullptr;
+    }
+}
 
-// 		arquivo.close();
-// 		tam=tamanhoinicial;
-// 		return vet;
-// 	} else {
-// 		return nullptr;
-// 		tam=0;
-// 		posicoesPreenchidas=0;
-// 	}
-// }
+void exportarBinario(Registro* Registros, const string& nomeArquivo) {
+   structAUX* vetAUX = new structAUX[NUM_MAX_REGISTROS];
 
+// Copia de dados entre os vetores
+	for (int i = 0; i < NUM_MAX_REGISTROS; i++) {
+		vetAUX[i].id = Registros[i].id;
+		strncpy(vetAUX[i].name, Registros[i].name.c_str(), sizeof(vetAUX[i].name) - 1);
+		strncpy(vetAUX[i].team, Registros[i].team.c_str(), sizeof(vetAUX[i].team) - 1);
+        strncpy(vetAUX[i].games, Registros[i].games.c_str(), sizeof(vetAUX[i].games) - 1);
+        vetAUX[i].year = Registros[i].year;
+		strncpy(vetAUX[i].season, Registros[i].season.c_str(), sizeof(vetAUX[i].season) - 1);
+	}
 
-
-// void exportarBinario(TipoJogador* vet, const string& nomeArquivo, int tam) {
-// 	struct structAUX {
-// 		int id;
-// 		char nome[40];
-// 		int idade;
-// 		int nivel;
-// 		char classe[40];
-// 	};
-// 	structAUX* vetAUX = new structAUX[tam];
-
-// // Copia de dados entre os vetores
-// 	for (int i = 0; i < tam; i++) {
-// 		vetAUX[i].id = vet[i].id;
-// 		strncpy(vetAUX[i].nome, vet[i].nome.c_str(), sizeof(vetAUX[i].nome) - 1);
-// 		vetAUX[i].idade = vet[i].idade;
-// 		vetAUX[i].nivel = vet[i].nivel;
-// 		strncpy(vetAUX[i].classe, vet[i].classe.c_str(), sizeof(vetAUX[i].classe) - 1);
-// 	}
-
-// 	ofstream arquivo(nomeArquivo, ios::binary);
-// 	if (arquivo) {
-// 		//escrita no arquivo .dat
-// 		arquivo.write((const char*)(vetAUX), sizeof(structAUX) * tam);
-// 		arquivo.close();
-// 		cout << "arquivo "<<nomeArquivo<<" lido com sucesso."<<endl;
-// 	} else {
-// 		cout<<"Erro ao ler o arquivo!!"<<endl;
-// 	}
-
-// 	delete[] vetAUX;
-// }
-
+    ofstream arquivo(nomeArquivo, ios::binary);
+    if (arquivo) {
+		//escrita no arquivo .dat
+		arquivo.write((const char*)(vetAUX), sizeof(structAUX) * NUM_MAX_REGISTROS);
+		arquivo.close();
+		cout << "arquivo "<<nomeArquivo<<" lido com sucesso. "<<endl;
+	} else {
+		cout<<"Erro ao ler o arquivo!! "<<endl;
+	}
+    delete [] vetAUX;
+}
 
 
 void importarCSV (string nomeArquivo, SequenceSet S){
@@ -179,7 +151,7 @@ void importarCSV (string nomeArquivo, SequenceSet S){
             R.id=stoi(idAUX);
             R.year=stoi(yearAUX);
 
-            S.InsereOrdenado(R);
+            S.insereOrdenado(R);
         }
         cout<<"Arquivo "<< nomeArquivo <<" lido com sucesso!! "<<endl;
 		arquivo.close();
@@ -188,26 +160,80 @@ void importarCSV (string nomeArquivo, SequenceSet S){
     }
 }
 
+bool verificaSeEhRegistroVazio(Registro R){
+    if(R.id==-1){
+        return true;
+    }
+    return false;
+}
+
+Registro RegistroVazio(){
+    Registro R;
+    R.id = -1;
+    R.name = "-";
+    R.team = "-";
+    R.games = "-";
+    R.year = -1;
+    R.season = "-";
+
+    return R;
+}
+
 
 
 int main(){
-    int opcao;
-    string nomeArquivoCSV;
+    int opcao, idAux;
+    string fileName;
+    SequenceSet SqcSet;
+    Registro RegAux;
 
     do{
 		telaOpcoes();
 		cin>>opcao;
         switch (opcao){
             case 1:
+                cout<<"Digite o nome do arquivo que sera lido: ";
+				cin>>fileName;
+                importarCSV(fileName, SqcSet);
             break;
 
             case 2:
+                cout<<"Digite o id do registro que sera adicionado: ";
+                cin>>RegAux.id;
+                cout<<endl<<"Digite o nome do registro que sera adicionado: ";
+                cin>>RegAux.name;
+                cout<<endl<<"Digite o time do registro que sera adicionado: ";
+                cin>>RegAux.team;
+                cout<<endl<<"Digite os jogos do registro que sera adicionado: ";
+                cin>>RegAux.games;
+                cout<<endl<<"Digite o ano do registro que sera adicionado: ";
+                cin>>RegAux.year;
+                cout<<endl<<"Digite a estacao do registro que sera adicionado: ";
+                cin>>RegAux.season;
+                
+                SqcSet.insereOrdenado(RegAux);
+                cout<<endl<<"Registro adicionado com sucesso! ";
             break;
 
             case 3:
+               cout<<"Digite o id do registro a ser buscado: ";
+                cin>>idAux;
+                RegAux=SqcSet.buscarRegistro(idAux);
+                if(verificaSeEhRegistroVazio(RegAux)){
+                    cout<<endl<<"Registro buscado nao existe!!"<<endl;
+                }else{
+                    printRegistro(RegAux);
+                }
             break;
 
             case 4:
+                cout<<"Digite o id do registro a ser removido: ";
+                cin>>idAux;
+                if(SqcSet.removeRegistro(idAux)){
+                    cout<<endl<<"Registro removido com sucesso!!"<<endl;
+                }else{
+                    cout<<endl<<"Registro buscado nao existe!!"<<endl;
+                }
             break;
 
             default:
