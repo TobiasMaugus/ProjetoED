@@ -155,21 +155,14 @@ void printRegistro(Registro R){
 
 
 
-Registro* importarCSV (string nomeArquivo){
+void importarCSV (string nomeArquivo, SequenceSet S){
     ifstream arquivo(nomeArquivo);
     
     if(arquivo){
         string linha;
         Registro R;
         string idAUX, yearAUX;
-        int contador=0, tamanho=0;
 
-        while (getline(arquivo, linha)) {
-            tamanho++;
-        }
-        Registro* Registros =  new Registro[tamanho];
-
-        arquivo.seekg(0, ios::beg);
         while(getline(arquivo, linha)) {
 			if (linha.empty()) {
 				continue;
@@ -186,15 +179,12 @@ Registro* importarCSV (string nomeArquivo){
             R.id=stoi(idAUX);
             R.year=stoi(yearAUX);
 
-            Registros[contador]=R;
-            contador++;
+            S.InsereOrdenado(R);
         }
         cout<<"Arquivo "<< nomeArquivo <<" lido com sucesso!! "<<endl;
 		arquivo.close();
-        return Registros;
     }else{
         cout<<"Arquivo "<<nomeArquivo<<" nao pode ser aberto "<<endl;
-        return nullptr;
     }
 }
 
