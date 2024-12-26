@@ -37,6 +37,7 @@ class SequenceSet{
 
     void InsereOrdenado(Registro R){};
     void RemoveRegistro(int IdRemovido){};
+    void buscarRegistro(int IdBuscado){};
 };
 
 //funcoes auxiliares que eu ainda irei arrumar estão comentadas(to reaproveitando de ialg)
@@ -51,6 +52,11 @@ void telaOpcoes(){
 	cout<<"|9 - SAIR DO PROGRAMA                                 |"<<endl;
 	cout<<"-------------------------------------------------------"<<endl;
 	cout<<"Digite o numero da acao que deseja realizar: ";
+}
+
+void printRegistro(Registro R){
+    cout<<"- ID: "<<R.id<<" Name: "<<R.name<<" Team: "<<R.team<<" Games: "<<
+    R.games<<" Year: "<<R.year<<" Season: "<<R.season<<endl;
 }
 
 // TipoJogador* importarBIN(const string& nomeArq, int& tam, int&posicoesPreenchidas) {
