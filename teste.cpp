@@ -1,8 +1,8 @@
-#include<iostream>
-#include<fstream>
-#include<sstream>
-#include<stdlib.h>
-#include<cstring>
+#include<iostream>//utilizar cout e cin
+#include<fstream>//ler arquivos
+#include<sstream>//fazer leitura de strings com espaco de forma mais eficaz
+#include<stdlib.h>//limpar o terminal utilizando system
+#include<cstring>//realizar conversoes BINARIO-STRING
 
 const int NUM_MAX_REGISTROS = 4;
 
