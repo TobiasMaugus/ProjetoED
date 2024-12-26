@@ -2,9 +2,10 @@
 #include<fstream>
 #include<sstream>
 #include<stdlib.h>
-using namespace std;
 
-#define NumMaxRegistros 4;
+const int NumMaxRegistros = 4;
+
+using namespace std;
 
 struct Registro{
     int id;
@@ -154,51 +155,48 @@ void printRegistro(Registro R){
 
 
 
-//IMPORTARCSV
-// arquivo2.open(nomeArquivo);
+Registro* importarCSV (string nomeArquivo){
+    ifstream arquivo(nomeArquivo);
+    
+    if(arquivo){
+        string linha;
+        Registro R;
+        string idAUX, yearAUX;
+        int contador=0, tamanho=0;
 
+        while (getline(arquivo, linha)) {
+            tamanho++;
+        }
+        Registro* Registros =  new Registro[tamanho];
 
-// 				if (arquivo2) {
-// 					string linha2;
-// 					std::getline(arquivo2, linha2);  // Descartar a primeira linha
-// 					arquivo2.tellg();
+        arquivo.seekg(0, ios::beg);
+        while(getline(arquivo, linha)) {
+			if (linha.empty()) {
+				continue;
+			}
 
-// 					posicoesPreenchidas = 0;
-// 					tam = 40;
-// 					delete [] Jogadores;
-// 					Jogadores = nullptr;
-// 					Jogadores = new Jogador[tam];
+            stringstream StrStream(linha);
+			getline(StrStream,idAUX,',');
+			getline(StrStream,R.name,',');
+			getline(StrStream,R.team,',');
+			getline(StrStream,R.games,',');
+			getline(StrStream,yearAUX, ',');
+            getline(StrStream,R.season, ',');
 
+            R.id=stoi(idAUX);
+            R.year=stoi(yearAUX);
 
-// 					while(getline(arquivo2, linha2)) {
-// 						if (linha2.empty()) {
-// 							continue;
-// 						}
-// 						stringstream ss2(linha2);
-// 						getline(ss2,idAUX,';');
-// 						getline(ss2,nomeAUX,';');
-// 						getline(ss2,idadeAUX,';');
-// 						getline(ss2,nivelAUX,';');
-// 						getline(ss2,classeAUX);
-
-// 						nomeAUX.erase(0,1);
-// 						nomeAUX.pop_back();
-// 						classeAUX.erase(0,1);
-// 						classeAUX.pop_back();
-
-// 						if(posicoesPreenchidas>=tam) {
-// 							Jogadores=redimensionaVetor(Jogadores, tam, incremento);
-// 							tam = tam+incremento;
-// 						}
-// 						Jogadores=adicionaRegistro(Jogadores, posicoesPreenchidas, stoi(idAUX), nomeAUX, stoi(idadeAUX), stoi(nivelAUX), classeAUX);
-
-// 						posicoesPreenchidas++;
-// 					}
-// 					cout<<"Arquivo "<< nomeArquivo <<" lido com sucesso!!"<<endl;
-// 					arquivo2.close();
-// 				} else {
-// 					cout<<"Arquivo "<<nomeArquivo<<" nao pode ser aberto ";
-// 				}
+            Registros[contador]=R;
+            contador++;
+        }
+        cout<<"Arquivo "<< nomeArquivo <<" lido com sucesso!! "<<endl;
+		arquivo.close();
+        return Registros;
+    }else{
+        cout<<"Arquivo "<<nomeArquivo<<" nao pode ser aberto "<<endl;
+        return nullptr;
+    }
+}
 
 
 
