@@ -1,0 +1,47 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+	  {
+		"label": "[MY]Build C++",
+		"type": "shell",
+		"command": "g++",
+		"args": [
+		  "\"${file}\"",
+		  "-o",
+		  "\"${fileBasenameNoExtension}\""
+		],
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
+		},
+		"problemMatcher": ["$gcc"],
+		"detail": "Compile the active C++ file"
+	  },
+	  {
+		"label": "[MY]Run C++ Program",
+		"type": "shell",
+		"command": "./\"${fileBasenameNoExtension}\"",
+		"group": {
+		  "kind": "test",
+		  "isDefault": true
+		},
+		"detail": "Run the compiled C++ program"
+	  },
+	  {
+		"label": "▶️[MY]Build and Run C++",
+		"type": "shell",
+		"command": "bash",
+		"args": [
+		  "-c",
+		  "g++ \"${file}\" -o \"${fileBasenameNoExtension}\" && ./\"${fileBasenameNoExtension}\""
+		],
+		"group": {
+		  "kind": "build",
+		  "isDefault": false
+		},
+		"problemMatcher": ["$gcc"],
+		"detail": "Compile and run the active C++ file"
+	  }
+	]
+  }
+  

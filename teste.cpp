@@ -157,6 +157,10 @@ string gerarNomeArquivoNode(int n){
     return "arquivoBIN_Node_"+to_string(n);
 }
 
+void printRegistro(Registro R){
+    cout<<"- ID: "<<R.id<<" Name: "<<R.name<<" Team: "<<R.team<<" Games: "<<
+    R.games<<" Year: "<<R.year<<" Season: "<<R.season<<endl;
+}
 
 
 class SequenceSet{
@@ -194,9 +198,95 @@ class SequenceSet{
 }
 
 
-    void insereOrdenado(Registro R){};//implementar
+    void insereOrdenado(Registro R){
+        if (this->inicio == nullptr) {
+            this->inicio = new Node;
+            this->inicio->filePath = gerarNomeArquivoNode(numProximoNodeCriado);
+            numProximoNodeCriado++;
+            this->inicio->qtdRegistros = 1;
+            Registro* Registros = EsvaziaVetor();
+            Registros[0] = R;
+            exportarBinario(Registros, this->inicio->filePath);
+            this->ultimo = this->inicio;
+            numSequences++;
+            return;
+        }
+
+        Node* atual = this->inicio;
+        Node* anterior = nullptr;
+   
+        while (atual != nullptr) {
+            if (atual->proximo == nullptr || R.id < atual->menorIdDoProximoNode) {
+                Registro* Registros = new Registro[NUM_MAX_REGISTROS];
+                Registros = importarBIN(atual->filePath);
+                if (!Registros) {
+                    cout << "Erro ao importar registros do arquivo " << atual->filePath << endl;
+                    return;
+                }
+
+                if (atual->qtdRegistros < NUM_MAX_REGISTROS) {
+                    Registros = insereOrdenadoNoVetor(Registros, R, atual->qtdRegistros);
+                    atual->qtdRegistros++;
+                    exportarBinario(Registros, atual->filePath);
+                    if(anterior!=nullptr){
+                        anterior->menorIdDoProximoNode = Registros[0].id;
+                    }
+                    delete [] Registros;
+                    return;
+                }
+
+                Registro* novoRegistros = new Registro[NUM_MAX_REGISTROS];
+                novoRegistros = EsvaziaVetor();
+
+                for (int i = 0; i < NUM_MAX_REGISTROS/2; i++) {
+                    novoRegistros[i] = Registros[i+NUM_MAX_REGISTROS/2];
+                    Registros[i+NUM_MAX_REGISTROS/2] = RegistroVazio();
+                }
+            
+                Node* novoNode = new Node;
+                novoNode->filePath = gerarNomeArquivoNode(numProximoNodeCriado);
+                numProximoNodeCriado++;
+                atual->qtdRegistros = NUM_MAX_REGISTROS/2;
+                novoNode->qtdRegistros = NUM_MAX_REGISTROS/2;   
+
+                if(R.id>novoRegistros[0].id){
+                    novoRegistros = insereOrdenadoNoVetor(novoRegistros, R, NUM_MAX_REGISTROS/2);
+                    novoNode->qtdRegistros++;
+                    
+                }else{
+                    Registros = insereOrdenadoNoVetor(Registros, R, NUM_MAX_REGISTROS/2);
+                    atual->qtdRegistros++;
+                }
+                exportarBinario(novoRegistros, novoNode->filePath); 
+                exportarBinario(Registros, atual->filePath);
+                
+                if(anterior!=nullptr){
+                    anterior->menorIdDoProximoNode = Registros[0].id;
+                }
+                if(atual->proximo!=nullptr){
+                    novoNode->menorIdDoProximoNode = atual->proximo->menorIdDoProximoNode;
+                }else{
+                    this->ultimo = novoNode;
+                }
+                
+                atual->menorIdDoProximoNode = novoRegistros[0].id;
+                novoNode->proximo = atual->proximo;
+                atual->proximo = novoNode;
+
+                delete [] Registros;
+                delete [] novoRegistros;
+                numSequences++;
+                return;
+            }
+            anterior = atual;
+            atual = atual->proximo;
+        }
+    };
+
+
+
     bool removeRegistro(int IdRemovido){
-        Node* atual = inicio;
+        Node* atual = this->inicio;
         Node* anterior = nullptr;
 
         while (atual != nullptr) {
@@ -225,12 +315,13 @@ class SequenceSet{
                     if (anterior != nullptr) {
                         anterior->proximo = atual->proximo;
                     } else {
-                        inicio = atual->proximo;
+                        this->inicio = atual->proximo;
                     }
                     if (atual == ultimo) {
-                        ultimo = anterior;
+                        this->ultimo = anterior;
                     }
                     delete atual;
+                    numSequences--;
                 }
                 anterior->menorIdDoProximoNode = Registros[0].id;
                 delete [] Registros;
@@ -244,7 +335,7 @@ class SequenceSet{
 
     
     Registro buscarRegistro(int IdBuscado){
-        Node* atual = inicio;
+        Node* atual = this->inicio;
 
         while (atual != nullptr) {
             if (atual->proximo == nullptr || IdBuscado < atual->menorIdDoProximoNode) {
@@ -266,9 +357,24 @@ class SequenceSet{
         }
         return RegistroVazio();
     };
+
+    void mostrarRegistros() {
+    Node* atual = inicio;
+    while (atual != nullptr) {
+        cout << "Arquivo: " << atual->filePath << endl;
+        Registro* Registros = importarBIN(atual->filePath);
+        for (int i = 0; i < atual->qtdRegistros; i++) {
+            printRegistro(Registros[i]);
+        }
+        delete[] Registros;
+        cout<<endl;
+        atual = atual->proximo;
+    }
+}
+
 };
 
-void importarCSV (string nomeArquivo, SequenceSet S){
+void importarCSV (string nomeArquivo, SequenceSet& S){
     ifstream arquivo(nomeArquivo);
     
     if(arquivo){
@@ -308,15 +414,11 @@ void telaOpcoes(){
 	cout<<"|2 - ADICIONAR REGISTRO PELO TERMINAL                 |"<<endl;
 	cout<<"|3 - BUSCAR REGISTRO                                  |"<<endl;
 	cout<<"|4 - REMOVER REGISTRO                                 |"<<endl;
+    cout<<"|5 - MOSTRAR REGISTROS                                |"<<endl;
 	cout<<"-------------------------------------------------------"<<endl;
 	cout<<"|9 - SAIR DO PROGRAMA                                 |"<<endl;
 	cout<<"-------------------------------------------------------"<<endl;
 	cout<<"Digite o numero da acao que deseja realizar: ";
-}
-
-void printRegistro(Registro R){
-    cout<<"- ID: "<<R.id<<" Name: "<<R.name<<" Team: "<<R.team<<" Games: "<<
-    R.games<<" Year: "<<R.year<<" Season: "<<R.season<<endl;
 }
 
 
@@ -373,6 +475,9 @@ int main(){
                 }else{
                     cout<<endl<<"Registro buscado nao existe!!"<<endl;
                 }
+            break;
+            case 5:
+                SqcSet.mostrarRegistros();
             break;
 
             default:
