@@ -195,7 +195,54 @@ class SequenceSet{
 
 
     void insereOrdenado(Registro R){};//implementar
-    bool removeRegistro(int IdRemovido){return true;};//implementar
+    bool removeRegistro(int IdRemovido){
+        Node* atual = inicio;
+        Node* anterior = nullptr;
+
+        while (atual != nullptr) {
+            if (atual->proximo == nullptr || IdRemovido < atual->menorIdDoProximoNode) {
+                Registro* Registros = importarBIN(atual->filePath);
+                if (!Registros) {
+                    cout << "Erro ao importar registros do arquivo " << atual->filePath << endl;
+                    return false;
+                }
+                int posicao = BinarySearch(Registros, 0, atual->qtdRegistros - 1, IdRemovido);
+
+                if(posicao==-1){
+                    delete [] Registros;
+                    return false;
+                }
+
+                Registros = reorganizaVetorNaRemocao(Registros, posicao);
+                atual->qtdRegistros--;
+                exportarBinario(Registros, atual->filePath);
+
+                if (atual->qtdRegistros == 0) {
+                    if (remove(atual->filePath.c_str()) != 0) {
+                        cout << "Erro ao deletar o arquivo " << atual->filePath << endl;
+                    }
+
+                    if (anterior != nullptr) {
+                        anterior->proximo = atual->proximo;
+                    } else {
+                        inicio = atual->proximo;
+                    }
+                    if (atual == ultimo) {
+                        ultimo = anterior;
+                    }
+                    delete atual;
+                }
+                anterior->menorIdDoProximoNode = Registros[0].id;
+                delete [] Registros;
+                return true;
+            }
+            anterior = atual;
+            atual = atual->proximo;
+        }
+        return false;
+    };
+
+    
     Registro buscarRegistro(int IdBuscado){
         Node* atual = inicio;
 
