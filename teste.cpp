@@ -74,13 +74,12 @@ Registro* importarBIN(const string& nomeArq) {
  	ifstream arquivo(nomeArq, ios::binary);
 
     if(arquivo) {
-		arquivo.seekg(0, ios::end);
-		streampos arquivoTAM = arquivo.tellg();
 		arquivo.seekg(0, ios::beg);
 
         structAUX* vetAUX = new structAUX[NUM_MAX_REGISTROS];
-        arquivo.read(reinterpret_cast<char*>(vetAUX), sizeof(structAUX) * NUM_MAX_REGISTROS);
         Registro* Registros = new Registro[NUM_MAX_REGISTROS];
+        arquivo.read(reinterpret_cast<char*>(vetAUX), sizeof(structAUX) * NUM_MAX_REGISTROS);
+        
 
         for(int i=0; i<NUM_MAX_REGISTROS; i++){
             Registros[i].id=vetAUX[i].id;
@@ -179,6 +178,49 @@ Registro RegistroVazio(){
     return R;
 }
 
+int BinarySearch(Registro* R, int left, int right, int procurado){
+    if(left>right){
+        return -1;
+    }
+    int mid = left+((right-left)/2);
+
+    if(R[mid].id==procurado){
+        return mid;
+    }
+
+    if(R[mid].id>procurado){
+        return BinarySearch(R, left, mid-1, procurado);
+    }else{
+        return BinarySearch(R, mid+1, right, procurado);
+    }
+}
+
+Registro* EsvaziaVetor(){
+    Registro* R = new Registro[NUM_MAX_REGISTROS];
+    for(int i=0; i<NUM_MAX_REGISTROS; i++){
+        R[i] = RegistroVazio();
+    }
+}
+
+Registro* insereOrdenadoNoVetor(Registro* R, Registro novo, int qtdRegistrosNoNode){
+    int i = qtdRegistrosNoNode-1; //ultima posicao ocupada
+    while (i >= 0 && R[i].id > novo.id) {
+        R[i + 1] = R[i];
+        i--;
+    }
+
+    R[i + 1] = novo;
+
+    return R;
+}
+
+Registro* reorganizaVetorNaRemocao(Registro* R, int posicaoRemovida){
+    for(int i=posicaoRemovida; i<NUM_MAX_REGISTROS-1; i++){
+        R[i]=R[i+1];
+    }
+    R[NUM_MAX_REGISTROS-1]=RegistroVazio();
+    return R;
+}
 
 
 int main(){
