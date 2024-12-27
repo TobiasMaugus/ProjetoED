@@ -18,9 +18,10 @@ struct Registro{
 };
 
 struct Node{
-    string filePath;
-    int qtdRegistros;
+    string filePath="";
+    int qtdRegistros=0;
     Node* proximo=nullptr;
+    int menorIdDoProximoNode=0;
 };
 
  struct structAUX {
@@ -31,44 +32,6 @@ struct Node{
     int year;
 	char season[50];
 };
-
-class SequenceSet{
-    private:
-    //header
-    int numSequences;
-    Node* inicio;
-    Node* ultimo;
-
-    public:
-    SequenceSet(){
-        numSequences=0;
-        inicio = NULL;
-        ultimo = NULL;
-    };
-
-    void insereOrdenado(Registro R){};//implementar
-    bool removeRegistro(int IdRemovido){};//implementar
-    Registro buscarRegistro(int IdBuscado){};//implementar
-};
-
-//funcoes auxiliares
-void telaOpcoes(){
-    system("clear||cls");
-    cout<<"-------------------------------------------------------"<<endl;
-	cout<<"|1 - ADICIONAR REGISTROS DE ARQUIVO CSV/TXT           |"<<endl;
-	cout<<"|2 - ADICIONAR REGISTRO PELO TERMINAL                 |"<<endl;
-	cout<<"|3 - BUSCAR REGISTRO                                  |"<<endl;
-	cout<<"|4 - REMOVER REGISTRO                                 |"<<endl;
-	cout<<"-------------------------------------------------------"<<endl;
-	cout<<"|9 - SAIR DO PROGRAMA                                 |"<<endl;
-	cout<<"-------------------------------------------------------"<<endl;
-	cout<<"Digite o numero da acao que deseja realizar: ";
-}
-
-void printRegistro(Registro R){
-    cout<<"- ID: "<<R.id<<" Name: "<<R.name<<" Team: "<<R.team<<" Games: "<<
-    R.games<<" Year: "<<R.year<<" Season: "<<R.season<<endl;
-}
 
 Registro* importarBIN(const string& nomeArq) {
  	ifstream arquivo(nomeArq, ios::binary);
@@ -126,39 +89,6 @@ void exportarBinario(Registro* Registros, const string& nomeArquivo) {
 }
 
 
-void importarCSV (string nomeArquivo, SequenceSet S){
-    ifstream arquivo(nomeArquivo);
-    
-    if(arquivo){
-        string linha;
-        Registro R;
-        string idAUX, yearAUX;
-
-        while(getline(arquivo, linha)) {
-			if (linha.empty()) {
-				continue;
-			}
-
-            stringstream StrStream(linha);
-			getline(StrStream,idAUX,',');
-			getline(StrStream,R.name,',');
-			getline(StrStream,R.team,',');
-			getline(StrStream,R.games,',');
-			getline(StrStream,yearAUX, ',');
-            getline(StrStream,R.season, ',');
-
-            R.id=stoi(idAUX);
-            R.year=stoi(yearAUX);
-
-            S.insereOrdenado(R);
-        }
-        cout<<"Arquivo "<< nomeArquivo <<" lido com sucesso!! "<<endl;
-		arquivo.close();
-    }else{
-        cout<<"Arquivo "<<nomeArquivo<<" nao pode ser aberto "<<endl;
-    }
-}
-
 bool verificaSeEhRegistroVazio(Registro R){
     if(R.id==-1){
         return true;
@@ -200,6 +130,7 @@ Registro* EsvaziaVetor(){
     for(int i=0; i<NUM_MAX_REGISTROS; i++){
         R[i] = RegistroVazio();
     }
+    return R;
 }
 
 Registro* insereOrdenadoNoVetor(Registro* R, Registro novo, int qtdRegistrosNoNode){
@@ -220,6 +151,125 @@ Registro* reorganizaVetorNaRemocao(Registro* R, int posicaoRemovida){
     }
     R[NUM_MAX_REGISTROS-1]=RegistroVazio();
     return R;
+}
+
+string gerarNomeArquivoNode(int n){
+    return "arquivoBIN_Node_"+to_string(n);
+}
+
+
+
+class SequenceSet{
+    private:
+    //header
+    int numSequences;
+    Node* inicio;
+    Node* ultimo;
+    int numProximoNodeCriado;
+
+    public:
+    SequenceSet(){
+        numSequences=0;
+        inicio = nullptr;
+        ultimo = nullptr;
+        numProximoNodeCriado=0;
+    };
+
+   ~SequenceSet() {
+    Node* atual = inicio;
+    while (atual != nullptr) {
+        Node* prox = atual->proximo;
+
+        if (remove(atual->filePath.c_str()) == 0) {
+            cout << "Arquivo " << atual->filePath << " deletado com sucesso"<<endl;
+        } else {
+            cerr << "Erro ao deletar o arquivo " << atual->filePath << endl;
+        }
+
+        delete atual;
+        atual = prox;
+    }
+    inicio = nullptr;
+    ultimo = nullptr;
+}
+
+
+    void insereOrdenado(Registro R){};//implementar
+    bool removeRegistro(int IdRemovido){return true;};//implementar
+    Registro buscarRegistro(int IdBuscado){
+        Node* atual = inicio;
+
+        while (atual != nullptr) {
+            if (atual->proximo == nullptr || IdBuscado < atual->menorIdDoProximoNode) {
+                Registro* Registros = importarBIN(atual->filePath);
+                int posicao = BinarySearch(Registros, 0, atual->qtdRegistros - 1, IdBuscado);
+
+                if (posicao != -1) {
+                    cout << "Registro encontrado no arquivo: " << atual->filePath << endl;
+                    cout << "Posição do registro no vetor: " << posicao << endl;
+                    Registro R = Registros[posicao];
+                    delete [] Registros;
+                    return R;
+                }
+
+                delete [] Registros;
+                return RegistroVazio();
+            }
+            atual = atual->proximo;
+        }
+        return RegistroVazio();
+    };
+};
+
+void importarCSV (string nomeArquivo, SequenceSet S){
+    ifstream arquivo(nomeArquivo);
+    
+    if(arquivo){
+        string linha;
+        Registro R;
+        string idAUX, yearAUX;
+
+        while(getline(arquivo, linha)) {
+			if (linha.empty()) {
+				continue;
+			}
+
+            stringstream StrStream(linha);
+			getline(StrStream,idAUX,',');
+			getline(StrStream,R.name,',');
+			getline(StrStream,R.team,',');
+			getline(StrStream,R.games,',');
+			getline(StrStream,yearAUX, ',');
+            getline(StrStream,R.season, ',');
+
+            R.id=stoi(idAUX);
+            R.year=stoi(yearAUX);
+
+            S.insereOrdenado(R);
+        }
+        cout<<"Arquivo "<< nomeArquivo <<" lido com sucesso!! "<<endl;
+		arquivo.close();
+    }else{
+        cout<<"Arquivo "<<nomeArquivo<<" nao pode ser aberto "<<endl;
+    }
+}
+
+void telaOpcoes(){
+    system("clear||cls");
+    cout<<"-------------------------------------------------------"<<endl;
+	cout<<"|1 - ADICIONAR REGISTROS DE ARQUIVO CSV/TXT           |"<<endl;
+	cout<<"|2 - ADICIONAR REGISTRO PELO TERMINAL                 |"<<endl;
+	cout<<"|3 - BUSCAR REGISTRO                                  |"<<endl;
+	cout<<"|4 - REMOVER REGISTRO                                 |"<<endl;
+	cout<<"-------------------------------------------------------"<<endl;
+	cout<<"|9 - SAIR DO PROGRAMA                                 |"<<endl;
+	cout<<"-------------------------------------------------------"<<endl;
+	cout<<"Digite o numero da acao que deseja realizar: ";
+}
+
+void printRegistro(Registro R){
+    cout<<"- ID: "<<R.id<<" Name: "<<R.name<<" Team: "<<R.team<<" Games: "<<
+    R.games<<" Year: "<<R.year<<" Season: "<<R.season<<endl;
 }
 
 
