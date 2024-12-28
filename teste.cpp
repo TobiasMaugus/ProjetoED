@@ -314,6 +314,7 @@ class SequenceSet{
 
                     if (anterior != nullptr) {
                         anterior->proximo = atual->proximo;
+                        anterior->menorIdDoProximoNode = Registros[0].id;
                     } else {
                         this->inicio = atual->proximo;
                     }
@@ -323,7 +324,6 @@ class SequenceSet{
                     delete atual;
                     numSequences--;
                 }
-                anterior->menorIdDoProximoNode = Registros[0].id;
                 delete [] Registros;
                 return true;
             }
@@ -441,12 +441,14 @@ int main(){
             case 2:
                 cout<<"Digite o id do registro que sera adicionado: ";
                 cin>>RegAux.id;
+                cin.ignore();
                 cout<<endl<<"Digite o nome do registro que sera adicionado: ";
-                cin>>RegAux.name;
+                getline(cin, RegAux.name);
                 cout<<endl<<"Digite o time do registro que sera adicionado: ";
                 cin>>RegAux.team;
+                cin.ignore();
                 cout<<endl<<"Digite os jogos do registro que sera adicionado: ";
-                cin>>RegAux.games;
+                getline(cin, RegAux.games);
                 cout<<endl<<"Digite o ano do registro que sera adicionado: ";
                 cin>>RegAux.year;
                 cout<<endl<<"Digite a estacao do registro que sera adicionado: ";
